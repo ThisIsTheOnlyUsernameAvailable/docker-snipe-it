@@ -38,7 +38,7 @@ RUN \
   echo "env[PATH] = /usr/local/bin:/usr/bin:/bin" >> /etc/php7/php-fpm.conf && \
   echo "**** install snipe-it ****" && \
   mkdir -p \
-    /var/www/html/ && \
+    /app/www/ && \
   if [ -z ${SNIPEIT_RELEASE+x} ]; then \
     SNIPEIT_RELEASE=$(curl -sX GET "https://api.github.com/repos/snipe/snipe-it/releases/latest" \
     | awk '/tag_name/{print $4;exit}' FS='[""]'); \
@@ -48,17 +48,17 @@ RUN \
     "https://github.com/snipe/snipe-it/archive/${SNIPEIT_RELEASE}.tar.gz" && \
   tar xf \
     /tmp/snipeit.tar.gz -C \
-    /var/www/html/ --strip-components=1 && \
-  cp /var/www/html/docker/docker.env /var/www/html/.env && \
+    /app/www/ --strip-components=1 && \
+  cp /app/www/docker/docker.env /app/www/.env && \
   echo "**** install dependencies ****" && \
   cd /tmp && \
   curl -sS https://getcomposer.org/installer | php && \
   mv /tmp/composer.phar /usr/local/bin/composer && \
-  composer install -d /var/www/html && \
+  composer install -d /app/www && \
   echo "**** move storage directories to defaults ****" && \
   mv \
-    "/var/www/html/storage" \
-    "/var/www/html/public/uploads" \
+    "/app/www/storage" \
+    "/app/www/public/uploads" \
     /defaults/ && \
   echo "**** cleanup ****" && \
   rm -rf \
