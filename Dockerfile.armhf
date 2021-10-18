@@ -8,6 +8,9 @@ LABEL build_version="Linuxserver.io version:- ${VERSION} Build-date:- ${BUILD_DA
 LABEL maintainer="TheLamer, sparkyballs"
 
 RUN \
+  echo "**** install build packages ****" && \
+  apk add --no-cache --virtual=build-dependencies \
+    composer && \
   echo "**** install runtime packages ****" && \
   apk add --no-cache \
     curl \
@@ -31,9 +34,6 @@ RUN \
     php7-zip \
     tar \
     unzip && \
-  echo "**** install composer ****" && \
-  php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && \
-  php composer-setup.php --install-dir=/tmp --filename=composer && \
   echo "**** configure php-fpm to pass env vars ****" && \
   sed -i \
     's/;clear_env = no/clear_env = no/g' \
@@ -60,6 +60,8 @@ RUN \
     "/app/www/public/uploads" \
     /defaults/ && \
   echo "**** cleanup ****" && \
+  apk del --purge \
+    build-dependencies && \
   rm -rf \
     /root/.composer \
     /tmp/*
