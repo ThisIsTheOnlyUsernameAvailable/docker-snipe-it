@@ -31,12 +31,16 @@ RUN \
     php7-zip \
     tar \
     unzip && \
+  echo "**** install composer ****" && \
+  php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && \
+  php composer-setup.php --install-dir=/tmp --filename=composer && \
   echo "**** configure php-fpm to pass env vars ****" && \
   sed -i \
     's/;clear_env = no/clear_env = no/g' \
     /etc/php7/php-fpm.d/www.conf && \
   echo "env[PATH] = /usr/local/bin:/usr/bin:/bin" >> /etc/php7/php-fpm.conf && \
   echo "**** install snipe-it ****" && \
+  composer install -d /app/www && \
   mkdir -p \
     /app/www/ && \
   if [ -z ${SNIPEIT_RELEASE+x} ]; then \
@@ -50,15 +54,10 @@ RUN \
     /tmp/snipeit.tar.gz -C \
     /app/www/ --strip-components=1 && \
   cp /app/www/docker/docker.env /app/www/.env && \
-  echo "**** install dependencies ****" && \
-  cd /tmp && \
-  curl -sS https://getcomposer.org/installer | php && \
-  mv /tmp/composer.phar /usr/local/bin/composer && \
-  composer install -d /app/www && \
   echo "**** move storage directories to defaults ****" && \
   mv \
-        "/app/www/storage" \
-        "/app/www/public/uploads" \
+    "/app/www/storage" \
+    "/app/www/public/uploads" \
     /defaults/ && \
   echo "**** cleanup ****" && \
   rm -rf \
