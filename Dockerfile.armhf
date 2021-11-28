@@ -8,9 +8,6 @@ LABEL build_version="Linuxserver.io version:- ${VERSION} Build-date:- ${BUILD_DA
 LABEL maintainer="TheLamer, sparkyballs"
 
 RUN \
-  echo "**** install build packages ****" && \
-  apk add --no-cache --virtual=build-dependencies \
-    composer && \
   echo "**** install runtime packages ****" && \
   apk add --no-cache \
     curl \
@@ -23,10 +20,10 @@ RUN \
     php8-iconv \
     php8-ldap \
     php8-mbstring \
-    php8-mcrypt \
-    php8-phar \
     php8-pdo_mysql \
     php8-pdo_sqlite \
+    php8-pecl-mcrypt \
+    php8-phar \
     php8-sqlite3 \
     php8-tokenizer \
     php8-xml \
@@ -34,10 +31,12 @@ RUN \
     php8-zip \
     tar \
     unzip && \
+  echo "**** install composer ****" && \
+  php8 -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && \
+  php8 composer-setup.php --install-dir=/usr/local/bin/composer --filename=composer && \
   echo "**** configure php-fpm to pass env vars ****" && \
-  sed -i \
-    's/;clear_env = no/clear_env = no/g' \
-    /etc/php8/php-fpm.d/www.conf && \
+  sed -E -i 's/^;?clear_env ?=.*$/clear_env = no/g' /etc/php8/php-fpm.d/www.conf && \
+  grep -qxF 'clear_env = no' /etc/php8/php-fpm.d/www.conf || echo 'clear_env = no' >> /etc/php8/php-fpm.d/www.conf && \
   echo "env[PATH] = /usr/local/bin:/usr/bin:/bin" >> /etc/php8/php-fpm.conf && \
   echo "**** install snipe-it ****" && \
   composer install -d /app/www && \
@@ -60,8 +59,6 @@ RUN \
     "/app/www/public/uploads" \
     /defaults/ && \
   echo "**** cleanup ****" && \
-  apk del --purge \
-    build-dependencies && \
   rm -rf \
     /root/.composer \
     /tmp/*
