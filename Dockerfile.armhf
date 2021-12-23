@@ -39,7 +39,6 @@ RUN \
   grep -qxF 'clear_env = no' /etc/php8/php-fpm.d/www.conf || echo 'clear_env = no' >> /etc/php8/php-fpm.d/www.conf && \
   echo "env[PATH] = /usr/local/bin:/usr/bin:/bin" >> /etc/php8/php-fpm.conf && \
   echo "**** install snipe-it ****" && \
-  composer install -d /app/www && \
   mkdir -p \
     /app/www/ && \
   if [ -z ${SNIPEIT_RELEASE+x} ]; then \
@@ -53,6 +52,7 @@ RUN \
     /tmp/snipeit.tar.gz -C \
     /app/www/ --strip-components=1 && \
   cp /app/www/docker/docker.env /app/www/.env && \
+  composer install -d /app/www && \
   echo "**** move storage directories to defaults ****" && \
   mv \
     "/app/www/storage" \
