@@ -8,6 +8,9 @@ LABEL build_version="Linuxserver.io version:- ${VERSION} Build-date:- ${BUILD_DA
 LABEL maintainer="TheLamer, sparkyballs"
 
 RUN \
+  echo "**** install build packages ****" && \
+  apk add --no-cache --virtual=build-dependencies \
+    composer && \
   echo "**** install runtime packages ****" && \
   apk add --no-cache \
     curl \
@@ -31,9 +34,6 @@ RUN \
     php8-zip \
     tar \
     unzip && \
-  echo "**** install composer ****" && \
-  php8 -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && \
-  php8 composer-setup.php --install-dir=/usr/local/bin --filename=composer && \
   echo "**** configure php-fpm to pass env vars ****" && \
   sed -E -i 's/^;?clear_env ?=.*$/clear_env = no/g' /etc/php8/php-fpm.d/www.conf && \
   grep -qxF 'clear_env = no' /etc/php8/php-fpm.d/www.conf || echo 'clear_env = no' >> /etc/php8/php-fpm.d/www.conf && \
@@ -59,6 +59,8 @@ RUN \
     "/app/www/public/uploads" \
     /defaults/ && \
   echo "**** cleanup ****" && \
+  apk del --purge \
+    build-dependencies && \
   rm -rf \
     /root/.composer \
     /tmp/*
